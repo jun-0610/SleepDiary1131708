@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>睡眠日記 - 1131708梁文心</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --bg: #0f172a;
+            --panel: #111827;
+            --panel-2: #1f2937;
+            --line: #334155;
+            --text: #f8fafc;
+            --muted: #9fb4d0;
+            --primary: #14b8a6;
+            --primary-2: #0f766e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: var(--bg);
+            color: var(--text);
+            font-family: "Noto Sans TC", Arial, sans-serif;
+            display: grid;
+            place-items: center;
+            padding: 32px;
+        }
+
+        .login-shell {
+            width: min(1120px, 100%);
+            min-height: 560px;
+            display: grid;
+            grid-template-columns: 1.08fr .92fr;
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 24px 80px rgba(2, 6, 23, .38);
+        }
+
+        .intro {
+            padding: 56px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background:
+                linear-gradient(135deg, rgba(20, 184, 166, .18), rgba(245, 158, 11, .08)),
+                #101827;
+            border-right: 1px solid var(--line);
+        }
+
+        .eyebrow {
+            color: var(--primary);
+            font-weight: 900;
+            letter-spacing: 0;
+            margin-bottom: 14px;
+        }
+
+        h1 {
+            font-size: 42px;
+            line-height: 1.15;
+            margin-bottom: 18px;
+        }
+
+        .intro p {
+            color: var(--muted);
+            line-height: 1.8;
+            font-size: 16px;
+            max-width: 560px;
+        }
+
+        .info-row {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 34px;
+        }
+
+        .info-card {
+            background: rgba(15, 23, 42, .58);
+            border: 1px solid rgba(148, 163, 184, .22);
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .info-label {
+            color: var(--muted);
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .info-value {
+            font-size: 18px;
+            font-weight: 900;
+        }
+
+        .form-side {
+            padding: 48px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .tab-switcher {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            background: #020617;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 6px;
+            margin-bottom: 24px;
+        }
+
+        .tab-btn {
+            border: 0;
+            border-radius: 6px;
+            background: transparent;
+            color: var(--muted);
+            padding: 12px;
+            font: inherit;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: #042f2e;
+        }
+
+        .alert-box {
+            display: none;
+            margin-bottom: 18px;
+            padding: 12px;
+            border-radius: 8px;
+            background: rgba(239, 68, 68, .15);
+            border: 1px solid rgba(239, 68, 68, .38);
+            color: #fecaca;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .form-panel { display: none; }
+        .form-panel.active { display: block; }
+
+        .form-title {
+            font-size: 24px;
+            font-weight: 900;
+            margin-bottom: 8px;
+        }
+
+        .form-hint {
+            color: var(--muted);
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            color: var(--muted);
+            font-size: 13px;
+            margin-bottom: 7px;
+        }
+
+        input {
+            width: 100%;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #020617;
+            color: var(--text);
+            padding: 12px 13px;
+            font: inherit;
+            font-size: 15px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(20, 184, 166, .16);
+        }
+
+        .btn-submit {
+            width: 100%;
+            border: 0;
+            border-radius: 8px;
+            background: var(--primary);
+            color: #042f2e;
+            padding: 13px;
+            margin-top: 6px;
+            font: inherit;
+            font-weight: 900;
+            cursor: pointer;
+        }
+
+        .btn-submit:hover {
+            background: #2dd4bf;
+        }
+
+        .credentials-box {
+            margin-top: 20px;
+            padding: 14px;
+            border: 1px solid rgba(245, 158, 11, .32);
+            background: rgba(245, 158, 11, .08);
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .credentials-box .header {
+            color: #fde68a;
+            font-weight: 900;
+            margin-bottom: 8px;
+        }
+
+        .item {
+            display: flex;
+            justify-content: space-between;
+            color: var(--muted);
+            gap: 12px;
+            margin-top: 4px;
+        }
+
+        .item strong {
+            color: var(--text);
+        }
+
+        @media (max-width: 900px) {
+            body { padding: 16px; }
+            .login-shell { grid-template-columns: 1fr; }
+            .intro { padding: 34px; border-right: 0; border-bottom: 1px solid var(--line); }
+            .form-side { padding: 34px; }
+            h1 { font-size: 32px; }
+        }
+    </style>
+</head>
+<body>
+    <main class="login-shell">
+        <section class="intro">
+            <div class="eyebrow">SleepDiary 1131708梁文心</div>
+            <h1>睡眠日記管理系統</h1>
+            <p>記錄每天的睡眠日期、時數、品質分數、原因與備註。登入後可新增、編輯、刪除紀錄，並查看最近 7 筆統計圖表。</p>
+
+        </section>
+
+        <section class="form-side">
+            <div class="tab-switcher">
+                <button class="tab-btn active" id="loginTab" type="button" onclick="switchTab('login')">登入</button>
+                <button class="tab-btn" id="registerTab" type="button" onclick="switchTab('register')">註冊</button>
+            </div>
+
+            <div id="alertBox" class="alert-box"></div>
+
+            <div class="form-panel active" id="loginPanel">
+                <div class="form-title">帳號登入</div>
+                <div class="form-hint">請輸入 Account 和 Password。</div>
+                <form action="/Account/Login" method="POST">
+                    <div class="form-group">
+                        <label for="loginUsername">Account</label>
+                        <input type="text" id="loginUsername" name="username" placeholder="請輸入帳號" required autocomplete="username" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="loginPassword">Password</label>
+                        <input type="password" id="loginPassword" name="password" placeholder="請輸入密碼" required autocomplete="current-password" />
+                    </div>
+
+                    <button type="submit" class="btn-submit">登入</button>
+                </form>
+
+                <div class="credentials-box">
+                    <div class="header">測試帳號</div>
+                    <div class="item"><span>Account</span><strong>admin</strong></div>
+                    <div class="item"><span>Password</span><strong>password123</strong></div>
+                </div>
+            </div>
+
+            <div class="form-panel" id="registerPanel">
+                <div class="form-title">建立新帳號</div>
+                <div class="form-hint">註冊會寫入 TableUsers1131708，完成後直接登入。</div>
+                <form action="/Account/Register" method="POST">
+                    <div class="form-group">
+                        <label for="regUsername">Account</label>
+                        <input type="text" id="regUsername" name="username" placeholder="請設定登入帳號" required autocomplete="username" maxlength="50" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="regPassword">Password</label>
+                        <input type="password" id="regPassword" name="password" placeholder="請設定登入密碼" required autocomplete="new-password" maxlength="50" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="regFullName">Name</label>
+                        <input type="text" id="regFullName" name="fullName" placeholder="請輸入姓名" required autocomplete="name" maxlength="50" />
+                    </div>
+
+                    <button type="submit" class="btn-submit">註冊並登入</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        function switchTab(mode) {
+            const loginTab = document.getElementById("loginTab");
+            const registerTab = document.getElementById("registerTab");
+            const loginPanel = document.getElementById("loginPanel");
+            const registerPanel = document.getElementById("registerPanel");
+
+            if (mode === "login") {
+                loginTab.classList.add("active");
+                registerTab.classList.remove("active");
+                loginPanel.classList.add("active");
+                registerPanel.classList.remove("active");
+            } else {
+                loginTab.classList.remove("active");
+                registerTab.classList.add("active");
+                loginPanel.classList.remove("active");
+                registerPanel.classList.add("active");
+            }
+        }
+
+        window.addEventListener("DOMContentLoaded", () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const errorType = urlParams.get("error");
+            const alertBox = document.getElementById("alertBox");
+
+            if (!errorType || !alertBox) {
+                return;
+            }
+
+            alertBox.style.display = "block";
+            if (errorType === "1") {
+                alertBox.innerText = "帳號或密碼錯誤，請重新輸入。";
+                switchTab("login");
+            } else if (errorType === "reg_exists") {
+                alertBox.innerText = "這個帳號已經被註冊，請換一個。";
+                switchTab("register");
+            } else if (errorType === "reg_empty") {
+                alertBox.innerText = "所有註冊欄位皆不可留空。";
+                switchTab("register");
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,620 @@
+﻿@model IEnumerable<SleepDiary1131708.Models.SleepLog>
+@{
+    Layout = null;
+    var currentPage = (int)ViewBag.CurrentPage;
+    var totalPages = (int)ViewBag.TotalPages;
+    var totalRecords = (int)ViewBag.TotalRecords;
+    var avgHours = ViewBag.AvgSleepHours;
+    var avgQuality = ViewBag.AvgQualityScore;
+    var chartDates = System.Text.Json.JsonSerializer.Serialize(ViewBag.ChartDates);
+    var chartHours = System.Text.Json.JsonSerializer.Serialize(ViewBag.ChartHours);
+    var chartQuality = System.Text.Json.JsonSerializer.Serialize(ViewBag.ChartQuality);
+}
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sleep Diary</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --top: #020617;
+            --panel: #111827;
+            --panel-2: #1f2937;
+            --line: #334155;
+            --text: #f8fafc;
+            --muted: #9fb4d0;
+            --primary: #14b8a6;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: var(--bg);
+            color: var(--text);
+            font-family: "Noto Sans TC", Arial, sans-serif;
+            font-size: 15px;
+        }
+
+        .navbar {
+            height: 68px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+            padding: 0 34px;
+            background: var(--top);
+            border-bottom: 1px solid var(--line);
+        }
+
+        .brand {
+            font-size: 22px;
+            font-weight: 900;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .logout {
+            color: #fecaca;
+            text-decoration: none;
+            border: 1px solid rgba(239, 68, 68, .45);
+            border-radius: 8px;
+            padding: 8px 12px;
+        }
+
+        .wrap {
+            width: min(1440px, calc(100% - 72px));
+            margin: 34px auto 56px;
+            display: grid;
+            grid-template-columns: minmax(420px, 520px) minmax(680px, 1fr);
+            gap: 24px;
+            align-items: start;
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 24px;
+        }
+
+        .panel-title {
+            margin: 0;
+            font-size: 21px;
+            font-weight: 900;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            margin: 18px 0 22px;
+        }
+
+        .stat {
+            background: var(--panel-2);
+            border: 1px solid rgba(148, 163, 184, .12);
+            border-radius: 8px;
+            padding: 16px 14px;
+            min-height: 86px;
+        }
+
+        .stat-label {
+            color: var(--muted);
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 26px;
+            font-weight: 900;
+        }
+
+        .chart-box {
+            height: 320px;
+            position: relative;
+            padding: 4px 4px 0;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        button, .page-link {
+            border: 0;
+            border-radius: 8px;
+            padding: 10px 14px;
+            cursor: pointer;
+            font-weight: 700;
+            font-family: inherit;
+            white-space: nowrap;
+        }
+
+        .btn-primary { background: var(--primary); color: #042f2e; }
+        .btn-secondary { background: var(--panel-2); color: var(--text); border: 1px solid var(--line); }
+        .btn-danger { background: rgba(239, 68, 68, .16); color: #fecaca; border: 1px solid rgba(239, 68, 68, .45); }
+        .btn-edit { background: rgba(245, 158, 11, .16); color: #fde68a; border: 1px solid rgba(245, 158, 11, .45); }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            min-width: 760px;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th, td {
+            padding: 14px 12px;
+            border-bottom: 1px solid var(--line);
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        th {
+            color: var(--muted);
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: nowrap;
+        }
+
+        .message {
+            padding: 12px 14px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .message.success { background: rgba(20, 184, 166, .16); color: #99f6e4; }
+        .message.error { background: rgba(239, 68, 68, .16); color: #fecaca; }
+
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-top: 18px;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .pages {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .page-link {
+            display: inline-flex;
+            color: var(--text);
+            background: var(--panel-2);
+            text-decoration: none;
+            border: 1px solid var(--line);
+            min-width: 42px;
+            justify-content: center;
+        }
+
+        .page-link.active {
+            background: var(--primary);
+            color: #042f2e;
+            border-color: var(--primary);
+        }
+
+        .page-link.disabled {
+            opacity: .45;
+            pointer-events: none;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(2, 6, 23, .78);
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            z-index: 20;
+        }
+
+        .modal.active { display: flex; }
+
+        .modal-card {
+            width: min(640px, 100%);
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 24px;
+        }
+
+        .modal-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .field { margin-bottom: 14px; }
+        .field.full { grid-column: 1 / -1; }
+        .field label { display: block; color: var(--muted); font-size: 13px; margin-bottom: 6px; }
+
+        .field input, .field textarea {
+            width: 100%;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #020617;
+            color: var(--text);
+            padding: 11px 12px;
+            font-family: inherit;
+            font-size: 15px;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .empty {
+            padding: 42px 12px;
+            color: var(--muted);
+            text-align: center;
+        }
+
+        @@media (max-width: 1100px) {
+            .wrap {
+                width: min(960px, calc(100% - 36px));
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @@media (max-width: 720px) {
+            .navbar {
+                height: auto;
+                align-items: flex-start;
+                flex-direction: column;
+                padding: 16px 20px;
+            }
+
+            .wrap { width: calc(100% - 24px); margin-top: 18px; }
+            .stats { grid-template-columns: 1fr; }
+            .form-grid { grid-template-columns: 1fr; }
+            .pagination { align-items: flex-start; flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <header class="navbar">
+        <div class="brand">Sleep Diary</div>
+        <div class="user-info">
+            <span>@(ViewBag.Name ?? "User")</span>
+            <span>ID 1131708</span>
+            <a class="logout" href="/Account/Logout">Logout</a>
+        </div>
+    </header>
+
+    <main class="wrap">
+        <section class="panel">
+            <h1 class="panel-title">Recent 7 Records</h1>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-label">Avg Hours</div>
+                    <div class="stat-value">@avgHours h</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Avg Quality</div>
+                    <div class="stat-value">@avgQuality / 10</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Records</div>
+                    <div class="stat-value">@totalRecords</div>
+                </div>
+            </div>
+            @if (totalRecords > 0)
+            {
+                <div class="chart-box">
+                    <canvas id="sleepChart"></canvas>
+                </div>
+            }
+            else
+            {
+                <div class="empty">No sleep records yet.</div>
+            }
+        </section>
+
+        <section class="panel">
+            <div class="toolbar">
+                <h2 class="panel-title">Sleep Records</h2>
+                <button type="button" class="btn-primary" onclick="openAddModal()">Add Record</button>
+            </div>
+
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="message success">@TempData["SuccessMessage"]</div>
+            }
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="message error">@TempData["ErrorMessage"]</div>
+            }
+
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>SleepDate</th>
+                                <th>SleepHours</th>
+                                <th>QualityScore</th>
+                                <th>Reason</th>
+                                <th>Remark</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.SleepDate.ToString("yyyy-MM-dd")</td>
+                                    <td>@item.SleepHours.ToString("0.0")</td>
+                                    <td>@item.QualityScore</td>
+                                    <td>@(string.IsNullOrWhiteSpace(item.Reason) ? "-" : item.Reason)</td>
+                                    <td>@(string.IsNullOrWhiteSpace(item.Remark) ? "-" : item.Remark)</td>
+                                    <td>
+                                        <div class="actions">
+                                            <button type="button"
+                                                    class="btn-edit"
+                                                    onclick='openEditModal(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(new { item.RecordID, SleepDate = item.SleepDate.ToString("yyyy-MM-dd"), item.SleepHours, item.QualityScore, item.Reason, item.Remark })))'>
+                                                Edit
+                                            </button>
+                                            <button type="button" class="btn-danger" onclick="confirmDelete(@item.RecordID, '@item.SleepDate.ToString("yyyy-MM-dd")')">Delete</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="empty">No records. Add your first one.</div>
+            }
+
+            <div class="pagination">
+                <div>Total @totalRecords, page @currentPage / @totalPages</div>
+                <div class="pages">
+                    <a class="page-link @(currentPage <= 1 ? "disabled" : "")" href="?page=@(currentPage - 1)">Prev</a>
+                    @for (var i = 1; i <= totalPages; i++)
+                    {
+                        <a class="page-link @(i == currentPage ? "active" : "")" href="?page=@i">@i</a>
+                    }
+                    <a class="page-link @(currentPage >= totalPages ? "disabled" : "")" href="?page=@(currentPage + 1)">Next</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div class="modal" id="addModal">
+        <div class="modal-card">
+            <div class="modal-head">
+                <h2 class="panel-title">Add Sleep Record</h2>
+                <button type="button" class="btn-secondary" onclick="closeAddModal()">Close</button>
+            </div>
+            <form action="/SleepLog/Create" method="post">
+                @Html.AntiForgeryToken()
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="addSleepDate">SleepDate</label>
+                        <input type="date" id="addSleepDate" name="sleepDate" required value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                    </div>
+                    <div class="field">
+                        <label for="addSleepHours">SleepHours</label>
+                        <input type="text" id="addSleepHours" name="sleepHours" required inputmode="decimal" placeholder="Example: 7.5" />
+                    </div>
+                    <div class="field">
+                        <label for="addQualityScore">QualityScore</label>
+                        <input type="text" id="addQualityScore" name="qualityScore" required inputmode="numeric" placeholder="1 to 10" />
+                    </div>
+                    <div class="field">
+                        <label for="addReason">Reason</label>
+                        <input type="text" id="addReason" name="reason" maxlength="200" />
+                    </div>
+                    <div class="field full">
+                        <label for="addRemark">Remark</label>
+                        <textarea id="addRemark" name="remark" maxlength="200" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeAddModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="editModal">
+        <div class="modal-card">
+            <div class="modal-head">
+                <h2 class="panel-title">Edit Sleep Record</h2>
+                <button type="button" class="btn-secondary" onclick="closeEditModal()">Close</button>
+            </div>
+            <form action="/SleepLog/Edit" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="editRecordID" name="id" />
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="editSleepDate">SleepDate</label>
+                        <input type="date" id="editSleepDate" name="sleepDate" required />
+                    </div>
+                    <div class="field">
+                        <label for="editSleepHours">SleepHours</label>
+                        <input type="text" id="editSleepHours" name="sleepHours" required inputmode="decimal" placeholder="Example: 7.5" />
+                    </div>
+                    <div class="field">
+                        <label for="editQualityScore">QualityScore</label>
+                        <input type="text" id="editQualityScore" name="qualityScore" required inputmode="numeric" placeholder="1 to 10" />
+                    </div>
+                    <div class="field">
+                        <label for="editReason">Reason</label>
+                        <input type="text" id="editReason" name="reason" maxlength="200" />
+                    </div>
+                    <div class="field full">
+                        <label for="editRemark">Remark</label>
+                        <textarea id="editRemark" name="remark" maxlength="200" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeEditModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <form id="deleteForm" action="/SleepLog/Delete" method="post" hidden>
+        @Html.AntiForgeryToken()
+        <input type="hidden" id="deleteRecordID" name="id" />
+    </form>
+
+    <script>
+        function openAddModal() {
+            document.getElementById("addModal").classList.add("active");
+        }
+
+        function closeAddModal() {
+            document.getElementById("addModal").classList.remove("active");
+        }
+
+        function openEditModal(record) {
+            document.getElementById("editRecordID").value = record.RecordID;
+            document.getElementById("editSleepDate").value = record.SleepDate;
+            document.getElementById("editSleepHours").value = record.SleepHours;
+            document.getElementById("editQualityScore").value = record.QualityScore;
+            document.getElementById("editReason").value = record.Reason || "";
+            document.getElementById("editRemark").value = record.Remark || "";
+            document.getElementById("editModal").classList.add("active");
+        }
+
+        function closeEditModal() {
+            document.getElementById("editModal").classList.remove("active");
+        }
+
+        function confirmDelete(recordId, sleepDate) {
+            if (confirm(`Delete the sleep record for ${sleepDate}?`)) {
+                document.getElementById("deleteRecordID").value = recordId;
+                document.getElementById("deleteForm").submit();
+            }
+        }
+
+        const chartDates = @Html.Raw(chartDates);
+        const chartHours = @Html.Raw(chartHours);
+        const chartQuality = @Html.Raw(chartQuality);
+
+        if (document.getElementById("sleepChart")) {
+            new Chart(document.getElementById("sleepChart"), {
+                data: {
+                    labels: chartDates,
+                    datasets: [
+                        {
+                            type: "bar",
+                            label: "SleepHours",
+                            data: chartHours,
+                            backgroundColor: "rgba(20, 184, 166, .58)",
+                            borderColor: "#14b8a6",
+                            borderWidth: 1,
+                            borderRadius: 4,
+                            maxBarThickness: 52,
+                            categoryPercentage: .55,
+                            barPercentage: .82,
+                            yAxisID: "hours"
+                        },
+                        {
+
+                            type: "line",
+                            label: "QualityScore",
+                            data: chartQuality,
+                            borderColor: "#f59e0b",
+
+                            pointStyle: 'rect',               // ✅ 方框
+                            pointRadius: 7,
+
+                            pointBorderWidth: 3,              // ✅ 邊框粗一點
+                            pointBorderColor: "#f59e0b",      // ✅ 橘色框
+
+                            pointBackgroundColor: "transparent", // ✅ ⭐ 變空心（最重要）
+
+                            tension: .3,
+                            yAxisID: "quality"
+
+
+                        }
+                    ]
+                },
+            options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: "#9fb4d0", boxWidth: 24 }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: "#9fb4d0" },
+                            grid: { display: false }
+                        },
+                        hours: {
+                            beginAtZero: true,
+                            suggestedMax: 10,
+                            position: "left",
+                            ticks: { color: "#9fb4d0", stepSize: 2 },
+                            grid: { color: "rgba(148, 163, 184, .15)" }
+                        },
+                        quality: {
+                            beginAtZero: true,
+                            max: 10,
+                            position: "right",
+                            ticks: { color: "#9fb4d0", stepSize: 2 },
+                            grid: { drawOnChartArea: false }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
