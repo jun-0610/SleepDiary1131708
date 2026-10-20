@@ -84,7 +84,7 @@ SleepDiary1131708
 ## 系統展示
 
 Demo：
-（放 YouTube 或影片連結）
+(https://yzu365-my.sharepoint.com/personal/s1131708_mail_yzu_edu_tw/_layouts/15/stream.aspx?id=%2Fpersonal%2Fs1131708%5Fmail%5Fyzu%5Fedu%5Ftw%2FDocuments%2F2026%2D06%2D07%2015%2D52%2D08%2Emp4&nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJPbmVEcml2ZUZvckJ1c2luZXNzIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXciLCJyZWZlcnJhbFZpZXciOiJNeUZpbGVzTGlua0NvcHkifX0&ga=1&referrer=StreamWebApp%2EWeb&referrerScenario=AddressBarCopied%2Eview%2Ea7925258%2Db8fc%2D4302%2Da4b9%2Df6a5fb747545)
 
 ---
 
